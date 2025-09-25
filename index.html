@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Axora Token Exchange</title>
+
+  <!-- Favicon -->
+  <link rel="icon" href="logo.png" type="image/png" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet" />
+
+
+  <meta name="theme-color" content="#017CD7" />
+  <meta name="description" content="Buy and sell Axora tokens securely with multiple cryptocurrencies." />
+
+  <style>
+    :root{
+      --axora-blue:#017CD7;
+      --axora-navy:#0F1528;
+      --axora-gray:#E4E5E5;
+      --axora-mid:#979899;
+    }
+    html, body { height: 100%; }
+    body{ font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    .screen-safe{ min-height: 100svh; }
+
+    input, select, button { transition: all .25s ease; }
+    input::placeholder{ color:#cfd3d6; opacity:.9; }
+    select, input{ background-color: rgba(15,21,40,.6)!important; color: var(--axora-gray)!important; }
+    select option{ color:#0F1528; background:#E4E5E5; }
+    button:active { transform: scale(.98); }
+    .glass {
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      box-shadow: 0 10px 30px rgba(1,124,215,.15);
+      border: 1px solid rgba(255,255,255,.12);
+      backdrop-filter: blur(10px);
+    }
+    .brand-gradient{ background: linear-gradient(135deg, var(--axora-navy), #0a2b5a 35%, var(--axora-blue)); }
+    .accent-ring:focus{ outline: none; box-shadow: 0 0 0 3px rgba(1,124,215,.35); }
+
+    .tab{ cursor:pointer; padding: .75rem 1.25rem; border-bottom: 3px solid transparent; font-weight: 700; }
+    .tab.active{ color: var(--axora-blue); border-color: var(--axora-blue); }
+
+    #message{ opacity:0; transition: opacity .35s ease; }
+    #message.show{ opacity:1; }
+  </style>
+</head>
+<body class="brand-gradient text-[var(--axora-gray)] screen-safe flex items-center justify-center p-4">
+
+  <main class="w-full max-w-2xl glass rounded-3xl p-6 sm:p-8">
+
+    <header class="flex items-center justify-center gap-3 mb-6 select-none">
+      <img src="logo.png" alt="Axora" class="w-12 h-12 sm:w-16 sm:h-16" />
+      <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight" style="color:var(--axora-blue)">AXORA</h1>
+    </header>
+
+    <p class="text-center text-sm sm:text-base text-[var(--axora-mid)] mb-6">Official quick exchange for Axora token</p>
+
+    <div class="flex justify-center mb-6 border-b border-white/10">
+      <div id="tab-buy" class="tab active">Buy Axora</div>
+      <div id="tab-sell" class="tab">Sell Axora</div>
+    </div>
+
+    <section id="content-buy" class="content-section space-y-5 block">
+      <div>
+        <label for="buy-amount" class="block mb-2 font-semibold">Token amount</label>
+        <input id="buy-amount" type="number" min="1" placeholder="e.g. 1000000"
+               class="w-full px-4 py-3 rounded-2xl bg-white/5 text-white placeholder-white/50 accent-ring" />
+      </div>
+
+      <div>
+        <label for="buy-currency" class="block mb-2 font-semibold">Pay with</label>
+        <select id="buy-currency" class="w-full px-4 py-3 rounded-2xl bg-white/5 text-white accent-ring">
+          <option value="bnb">BNB (BSC)</option>
+          <option value="eth">ETH (Ethereum)</option>
+          <option value="usdt">USDT (TRC20)</option>
+          <option value="btc">BTC (Bitcoin)</option>
+          <option value="trx">TRX (Tron)</option>
+        </select>
+      </div>
+
+      <button id="buy-calc" onclick="calculate('buy')"
+        class="w-full py-3 rounded-2xl font-bold bg-[var(--axora-blue)] hover:brightness-110 active:brightness-95 text-white">
+        Calculate
+      </button>
+
+      <div id="buy-priceResult" class="text-center font-semibold text-sm sm:text-base hidden"></div>
+
+      <div id="buy-walletInfo" class="hidden bg-white/5 rounded-2xl p-4">
+        <p class="text-center text-[var(--axora-blue)] font-bold mb-2">Send to this address</p>
+        <div id="buy-walletAddress" class="break-all font-mono text-center"></div>
+        <div class="flex justify-center mt-4">
+          <img id="buy-qrCode" src="" alt="QR" class="w-32 h-32 border border-white/15 p-2 rounded-xl" />
+        </div>
+      </div>
+
+      <div>
+        <label for="buy-userWallet" class="block mb-2 font-semibold">Your wallet address</label>
+        <input id="buy-userWallet" type="text" placeholder="0x..."
+               class="w-full px-4 py-3 rounded-2xl bg-white/5 text-white placeholder-white/50 accent-ring" />
+      </div>
+
+      <div>
+        <label for="buy-txHash" class="block mb-2 font-semibold">Transaction hash</label>
+        <input id="buy-txHash" type="text" placeholder="0x..."
+               class="w-full px-4 py-3 rounded-2xl bg-white/5 text-white placeholder-white/50 accent-ring" />
+      </div>
+
+      <div class="bg-white/5 p-4 rounded-2xl text-xs sm:text-sm text-white/80 border border-white/10">
+        <p class="mb-1">Send the wallet address and transaction hash to admin.</p>
+        <p>Telegram: <a href="http://t.me/AXORATOKENADMIN" target="_blank" class="underline text-[var(--axora-blue)]">t.me/AXORATOKENADMIN</a></p>
+      </div>
+
+      <button id="buy-submit" onclick="submitTransaction('buy')"
+        class="w-full py-3 rounded-2xl font-bold bg-[var(--axora-blue)] hover:brightness-110 active:brightness-95 text-white">
+        Submit transaction info
+      </button>
+    </section>
+
+    <section id="content-sell" class="content-section space-y-5 hidden">
+      <div>
+        <label for="sell-amount" class="block mb-2 font-semibold">Token amount (min 500)</label>
+        <input id="sell-amount" type="number" min="500" placeholder="e.g. 1000"
+               class="w-full px-4 py-3 rounded-2xl bg-white/5 text-white placeholder-white/50 accent-ring" />
+      </div>
+
+      <div>
+        <label for="sell-currency" class="block mb-2 font-semibold">Receive in</label>
+        <select id="sell-currency" class="w-full px-4 py-3 rounded-2xl bg-white/5 text-white accent-ring">
+          <option value="bnb">BNB (BSC)</option>
+          <option value="eth">ETH (Ethereum)</option>
+          <option value="usdt">USDT (TRC20)</option>
+          <option value="btc">BTC (Bitcoin)</option>
+          <option value="trx">TRX (Tron)</option>
+        </select>
+      </div>
+
+      <button id="sell-calc" onclick="calculate('sell')"
+        class="w-full py-3 rounded-2xl font-bold bg-[var(--axora-blue)] hover:brightness-110 active:brightness-95 text-white">
+        Calculate
+      </button>
+
+      <div id="sell-priceResult" class="text-center font-semibold text-sm sm:text-base hidden"></div>
+
+      <div id="sell-walletInfo" class="hidden bg-white/5 rounded-2xl p-4">
+        <p class="text-center text-[var(--axora-blue)] font-bold mb-2">Send your AXORA tokens here</p>
+        <div id="sell-walletAddress" class="break-all font-mono text-center"></div>
+        <div class="flex justify-center mt-4">
+          <img id="sell-qrCode" src="" alt="QR" class="w-32 h-32 border border-white/15 p-2 rounded-xl" />
+        </div>
+      </div>
+
+      <div>
+        <label for="sell-userWallet" class="block mb-2 font-semibold">Destination wallet to receive</label>
+        <input id="sell-userWallet" type="text" placeholder="0x..."
+               class="w-full px-4 py-3 rounded-2xl bg-white/5 text-white placeholder-white/50 accent-ring" />
+      </div>
+
+      <div>
+        <label for="sell-txHash" class="block mb-2 font-semibold">Axora transfer hash</label>
+        <input id="sell-txHash" type="text" placeholder="0x..."
+               class="w-full px-4 py-3 rounded-2xl bg-white/5 text-white placeholder-white/50 accent-ring" />
+      </div>
+
+      <div class="bg-white/5 p-4 rounded-2xl text-xs sm:text-sm text-white/80 border border-white/10">
+        <p class="mb-1">Send the wallet address and transaction hash to admin.</p>
+        <p>Telegram: <a href="http://t.me/AXORATOKENADMIN" target="_blank" class="underline text-[var(--axora-blue)]">t.me/AXORATOKENADMIN</a></p>
+      </div>
+
+      <button id="sell-submit" onclick="submitTransaction('sell')"
+        class="w-full py-3 rounded-2xl font-bold bg-[var(--axora-blue)] hover:brightness-110 active:brightness-95 text-white">
+        Submit transaction info
+      </button>
+    </section>
+
+    <div id="message" class="text-center font-semibold mt-6 text-white"></div>
+  </main>
+
+  <script>
+    const walletAddresses = {
+      buy: {
+        bnb: "0xacDd54d29d350f183bE47Ec64C95Bfc05805c902",
+        eth: "0xacDd54d29d350f183bE47Ec64C95Bfc05805c902",
+        usdt: "TWWKr8K7pZuXTHK6ogVwZ7kAN5mVLHMmpp",
+        btc: "bc1qdw8agqhz08hgzlg0vqpx25rxy4qxpwsa68d5ua",
+        trx: "TWWKr8K7pZuXTHK6ogVwZ7kAN5mVLHMmpp"
+      },
+      sell: {
+        axoratoken: "0x6C157E7A6e8e2F9B3a92B46326c71B9814bBCA1"
+      }
+    };
+
+    const qrBaseURL = "https://api.qrserver.com/v1/create-qr-code/?size=144x144&data=";
+
+    const tokenPriceUSD = 0.0003;
+    let currencyRatesUSD = { bnb: null, eth: null, usdt: 1, btc: null, trx: null };
+
+    const tabs = {
+      buy: document.getElementById("tab-buy"),
+      sell: document.getElementById("tab-sell")
+    };
+    const contents = {
+      buy: document.getElementById("content-buy"),
+      sell: document.getElementById("content-sell")
+    };
+
+    tabs.buy.addEventListener("click", () => switchTab("buy"));
+    tabs.sell.addEventListener("click", () => switchTab("sell"));
+
+    function switchTab(which){
+      for(const k of ["buy","sell"]) {
+        tabs[k].classList.toggle('active', k===which);
+        contents[k].classList.toggle('hidden', k!==which);
+        contents[k].classList.toggle('block', k===which);
+      }
+      clearMessage();
+    }
+
+    async function fetchCurrencyRates() {
+      try {
+        const resp = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=binancecoin,ethereum,bitcoin,tron&vs_currencies=usd");
+        const data = await resp.json();
+        currencyRatesUSD.bnb = data.binancecoin.usd;
+        currencyRatesUSD.eth = data.ethereum.usd;
+        currencyRatesUSD.btc = data.bitcoin.usd;
+        currencyRatesUSD.trx = data.tron.usd;
+      } catch {
+        console.error("Could not fetch currency rates, using fallback.");
+        currencyRatesUSD = { bnb: 320, eth: 1800, usdt: 1, btc: 28000, trx: 0.06 };
+      }
+    }
+    fetchCurrencyRates();
+
+    function clearMessage(){ const m=document.getElementById('message'); m.textContent=''; m.classList.remove('show'); }
+    function showMessage(text, isError=false){ const m=document.getElementById('message'); m.textContent=text; m.style.color = isError? '#ff8888':'#E4E5E5'; m.classList.add('show'); setTimeout(()=>m.classList.remove('show'), 6000);}    
+
+    function showWalletInfo(type, currency){
+      const walletDiv = document.getElementById(`${type}-walletInfo`);
+      const addrDiv = document.getElementById(`${type}-walletAddress`);
+      const qrImg = document.getElementById(`${type}-qrCode`);
+      let address = type==='buy' ? walletAddresses.buy[currency] : walletAddresses.sell.axoratoken;
+      if(address){
+        addrDiv.textContent = address;
+        qrImg.src = qrBaseURL + encodeURIComponent(address);
+        walletDiv.classList.remove('hidden');
+      } else walletDiv.classList.add('hidden');
+    }
+
+    function calculate(type){
+      clearMessage();
+      if(type==='buy'){
+        const amount = Number(document.getElementById('buy-amount').value);
+        const currency = document.getElementById('buy-currency').value;
+        if(!amount || amount<=0) return showMessage('Please enter a valid amount.', true);
+        if(!currencyRatesUSD[currency]) return showMessage('Rate not available. Try again later.', true);
+        const totalUSD = amount * tokenPriceUSD;
+        const priceInCurrency = totalUSD / currencyRatesUSD[currency];
+        const priceDiv = document.getElementById('buy-priceResult');
+        priceDiv.textContent = `You should pay: ${priceInCurrency.toFixed(6)} ${currency.toUpperCase()}`;
+        priceDiv.classList.remove('hidden');
+        showWalletInfo('buy', currency);
+      } else {
+        const amount = Number(document.getElementById('sell-amount').value);
+        const currency = document.getElementById('sell-currency').value;
+        if(!amount || amount<500) return showMessage('Minimum sell is 500 tokens.', true);
+        if(!currencyRatesUSD[currency]) return showMessage('Rate not available. Try again later.', true);
+        const totalUSD = amount * tokenPriceUSD;
+        const priceInCurrency = totalUSD / currencyRatesUSD[currency];
+        const priceDiv = document.getElementById('sell-priceResult');
+        priceDiv.textContent = `You will approximately receive: ${priceInCurrency.toFixed(6)} ${currency.toUpperCase()}`;
+        priceDiv.classList.remove('hidden');
+        showWalletInfo('sell');
+      }
+    }
+
+    function submitTransaction(type){
+      clearMessage();
+      let amount, userWallet, txHash;
+      if(type==='buy'){
+        amount = Number(document.getElementById('buy-amount').value);
+        userWallet = document.getElementById('buy-userWallet').value.trim();
+        txHash = document.getElementById('buy-txHash').value.trim();
+        if(!amount || amount<=0) return showMessage('Invalid amount.', true);
+        if(userWallet.length<10) return showMessage('Invalid wallet address.', true);
+        if(txHash.length<10) return showMessage('Invalid transaction hash.', true);
+      } else {
+        amount = Number(document.getElementById('sell-amount').value);
+        userWallet = document.getElementById('sell-userWallet').value.trim();
+        txHash = document.getElementById('sell-txHash').value.trim();
+        if(!amount || amount<500) return showMessage('Minimum sell is 500.', true);
+        if(userWallet.length<10) return showMessage('Invalid wallet address.', true);
+        if(txHash.length<10) return showMessage('Invalid transaction hash.', true);
+      }
+      showMessage('Submitted successfully. We will review and notify you.');
+    }
+  </script>
+</body>
+</html>
