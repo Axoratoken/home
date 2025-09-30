@@ -201,7 +201,7 @@
     const qrBaseURL = "https://api.qrserver.com/v1/create-qr-code/?size=144x144&data=";
 
     const tokenPriceUSD = 0.0003;
-    let currencyRatesUSD = { bnb: null, eth: null, usdt: 1, btc: null, trx: null };
+    let currencyRatesUSD = { bnb: null, eth: null, usdt: 1, usdt1: 1, btc: null, trx: null };
 
     const tabs = {
       buy: document.getElementById("tab-buy"),
@@ -234,7 +234,7 @@
         currencyRatesUSD.trx = data.tron.usd;
       } catch {
         console.error("Could not fetch currency rates, using fallback.");
-        currencyRatesUSD = { bnb: 320, eth: 1800, usdt: 1, btc: 28000, trx: 0.06 };
+        currencyRatesUSD = { bnb: 320, eth: 1800, usdt: 1, usdt1: 1, btc: 28000, trx: 0.06 };
       }
     }
     fetchCurrencyRates();
@@ -304,4 +304,5 @@
   </script>
 </body>
 </html>
+
 
